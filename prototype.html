@@ -1,0 +1,95 @@
+<!DOCTYPE>
+<html>
+	<head>
+		<title>boardgame ranking prototype</title>
+		<script type='text/javascript'>
+		var a = [34, 203, 3, 746, 200, 984, 198, 764, 9];
+ 
+		function mergeSort(arr)
+		{
+		    if (arr.length < 2)
+		        return arr;
+		 
+		    var middle = parseInt(arr.length / 2);
+		    var left   = arr.slice(0, middle);
+		    var right  = arr.slice(middle, arr.length);
+
+		    return new Promise(function(resolve, reject) {
+		    	var lsort = mergeSort(left);
+		    	var rsort = mergeSort(right);
+
+		    	Promise.all([lsort, rsort]).then(function(results) {
+		    		resolve(merge(results[0], results[1]));
+		    	});
+		    });
+		}
+
+		function merge(left, right)
+		{
+		    var result = [];
+		 
+		    return promiseWhile(
+		    	function(){
+		    		return left.length && right.length;
+		    	},
+		    	function(){
+		    		return compare(left[0], right[0])
+			    		.then(function(isLessThan){
+			    			if (isLessThan) {
+			    				result.push(left.shift());
+			    			} else {
+			    				result.push(right.shift());
+			    			}
+			    		});
+		    	}).then(function () {
+				    while (left.length)
+				        result.push(left.shift());
+				 
+				    while (right.length)
+				        result.push(right.shift());
+
+				    console.log(result);
+
+				    return result;
+		    	});
+		}
+
+		function promiseWhile(condition, action) {
+			if (!condition()) return Promise.resolve();
+
+			return Promise.resolve(action().then(promiseWhile.bind(this, condition, action)));
+		}
+
+		function compare(left, right) {
+			return new Promise(function(resolve, reject) { 
+				var leftElement = document.getElementById('leftElement');
+				var rightElement = document.getElementById('rightElement');
+				leftElement.innerHTML = left;
+				rightElement.innerHTML = right;
+				var leftIsGreater = function () {
+					leftElement.removeEventListener('click',leftIsGreater);
+					resolve(left >= right); 
+				};
+				var rightIsGreater = function () {
+					rightElement.removeEventListener('click',rightIsGreater);
+					resolve(right >= left); 
+				};
+				leftElement.addEventListener('click', leftIsGreater);
+				rightElement.addEventListener('click', rightIsGreater);
+			});
+		}
+
+		document.addEventListener("DOMContentLoaded", function(event) {
+			mergeSort(a).then(function(val) { console.log('finished', val); });
+		});
+
+		</script>
+		
+	</head>
+	<body>
+		<h1>we're merge sorting</h1>
+		<div>which is greater:</div>
+		<div id="leftElement"></div>
+		<div id="rightElement"></div>
+	</body>
+</html>
