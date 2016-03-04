@@ -33,7 +33,7 @@
 		    		return left.length && right.length;
 		    	},
 		    	function(){
-		    		return compare(left[0], right[0])
+		    		return isLeftLessThanRight(left[0], right[0])
 			    		.then(function(isLessThan){
 			    			if (isLessThan) {
 			    				result.push(left.shift());
@@ -60,22 +60,44 @@
 			return Promise.resolve(action().then(promiseWhile.bind(this, condition, action)));
 		}
 
-		function compare(left, right) {
+		function isLeftLessThanRight(left, right) {
 			return new Promise(function(resolve, reject) { 
-				var leftElement = document.getElementById('leftElement');
-				var rightElement = document.getElementById('rightElement');
+				var container = document.createElement('div');
+				container.setAttribute('class','versus-container');
+
+				var leftElement = document.createElement('span');
 				leftElement.innerHTML = left;
+
+				var rightElement = document.createElement('span');
 				rightElement.innerHTML = right;
+
+				var vs = document.createElement('span');
+				vs.innerHTML = 'vs';
+
+				container.appendChild(leftElement);
+				container.appendChild(vs);
+				container.appendChild(rightElement);
+
 				var leftIsGreater = function () {
 					leftElement.removeEventListener('click',leftIsGreater);
-					resolve(left >= right); 
+					rightElement.removeEventListener('click',rightIsGreater);
+					console.log('choosing',right);
+					container.remove();
+					resolve(false);
 				};
+
 				var rightIsGreater = function () {
 					rightElement.removeEventListener('click',rightIsGreater);
-					resolve(right >= left); 
+					leftElement.removeEventListener('click',leftIsGreater);
+					console.log('choosing',left);
+					container.remove();
+					resolve(true);
 				};
+
 				leftElement.addEventListener('click', leftIsGreater);
 				rightElement.addEventListener('click', rightIsGreater);
+
+				document.body.appendChild(container);
 			});
 		}
 
@@ -84,12 +106,16 @@
 		});
 
 		</script>
-		
+
+		<style type='text/css'>
+		.versus-container{
+			font-size:20em;
+		}
+		</style>
+
 	</head>
 	<body>
 		<h1>we're merge sorting</h1>
 		<div>which is greater:</div>
-		<div id="leftElement"></div>
-		<div id="rightElement"></div>
 	</body>
 </html>
